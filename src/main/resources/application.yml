@@ -1,0 +1,41 @@
+server:
+  port: 8888
+  forward-headers-strategy: framework
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: api-gateway
+  cloud:
+    discovery:
+      enabled: true
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path="/qonaqzhai/auth/**
+          filters:
+            - RewritePath=/qonaqzhai/auth/(?<segment>.*), /auth/$\{segment}
+
+        - id: administration
+          uri: lb://administration
+          predicates:
+            - Path="/qonaqzhai/admin/**
+          filters:
+            - RewritePath=/qonaqzhai/admin/(?<segment>.*), /admin/$\{segment}
+            - name:
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    enabled: true
+
+auth-service:
+  url: http://host.docker.internal:8083/auth
+
+logging:
+  level:
+    com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver: WARN
