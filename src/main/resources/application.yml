@@ -10,21 +10,22 @@ spring:
     discovery:
       enabled: true
     gateway:
-      routes:
-        - id: auth-service
-          uri: lb://auth-service
-          predicates:
-            - Path="/qonaqzhai/auth/**
-          filters:
-            - RewritePath=/qonaqzhai/auth/(?<segment>.*), /auth/$\{segment}
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path="/qonaqzhai/auth/**
+              filters:
+                - RewritePath=/qonaqzhai/auth/(?<segment>.*), /auth/$\{segment}
 
-        - id: administration
-          uri: lb://administration
-          predicates:
-            - Path="/qonaqzhai/admin/**
-          filters:
-            - RewritePath=/qonaqzhai/admin/(?<segment>.*), /admin/$\{segment}
-            - name:
+            - id: administration
+              uri: lb://administration
+              predicates:
+                - Path="/qonaqzhai/admin/**
+              filters:
+                - RewritePath=/qonaqzhai/admin/(?<segment>.*), /admin/$\{segment}
 
 
 eureka:

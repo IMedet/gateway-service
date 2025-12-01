@@ -1,0 +1,17 @@
+{
+    "java.debug.settings.console": "integratedTerminal",
+    "terminal.integrated.fontSize": 13,
+    "terminal.integrated.fontFamily": "JetBrains Mono, Consolas",
+    "spring-boot.ls.checkJVM": false,
+    "spring-boot.ls.forceMaven": true,
+    "spring.configuration.support.yaml": true,
+    "spring.configuration.support.properties": true,
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.inlayHints.parameterNames.enabled": "all",
+    "java.saveActions.organizeImports": true,
+    "spring-boot.icons.show": true,
+    "java.symbols.includeSourceMethodDeclarations": true,
+    "editor.codeLens": true,
+    "java.referencesCodeLens.enabled": true
+}

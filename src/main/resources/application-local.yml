@@ -1,8 +1,28 @@
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
-    enabled: true
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: admin-service
+              uri: http://localhost:8080
+              predicates:
+                - Path=/api/admin/**
+              filters:
+                - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
+            - id: auth-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - RewritePath=/api/auth/(?<segment>.*), /$\{segment}
+          discovery:
+            locator:
+              enabled: false
 
-auth-service:
-  url: http://localhost:8083/auth
+    eureka:
+      client:
+        enabled: false
+
+    auth-service:
+      url: http://localhost:8081/auth
