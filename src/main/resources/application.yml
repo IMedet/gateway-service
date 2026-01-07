@@ -12,20 +12,44 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            corsConfigurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+                exposedHeaders:
+                  - Authorization
+                allowCredentials: false
           routes:
             - id: auth-service
               uri: lb://auth-service
               predicates:
-                - Path="/qonaqzhai/auth/**
+                - Path=/qonaqzhai/auth/**
               filters:
-                - RewritePath=/qonaqzhai/auth/(?<segment>.*), /auth/$\{segment}
+                - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
 
             - id: administration
               uri: lb://administration
               predicates:
-                - Path="/qonaqzhai/admin/**
+                - Path=/qonaqzhai/admin/**
               filters:
-                - RewritePath=/qonaqzhai/admin/(?<segment>.*), /admin/$\{segment}
+                - RewritePath=/qonaqzhai/admin(?<segment>/?.*), ${segment}
+                - AuthenticationFilter
+
+            - id: event-service
+              uri: lb://event-service
+              predicates:
+                - Path=/qonaqzhai/events/**
+              filters:
+                - RewritePath=/qonaqzhai/events(?<segment>/?.*), /events${segment}
+                - AuthenticationFilter
 
 
 eureka:
@@ -35,7 +59,7 @@ eureka:
     enabled: true
 
 auth-service:
-  url: http://host.docker.internal:8083/auth
+  url: ${AUTH_SERVICE_URL:http://localhost:8081}
 
 logging:
   level:

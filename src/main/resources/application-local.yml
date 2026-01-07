@@ -4,18 +4,28 @@ spring:
       server:
         webflux:
           routes:
-            - id: admin-service
-              uri: http://localhost:8080
-              predicates:
-                - Path=/api/admin/**
-              filters:
-                - RewritePath=/api/admin/(?<segment>.*), /$\{segment}
             - id: auth-service
               uri: http://localhost:8081
               predicates:
-                - Path=/api/auth/**
+                - Path=/qonaqzhai/auth/**
               filters:
-                - RewritePath=/api/auth/(?<segment>.*), /$\{segment}
+                - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
+
+            - id: administration
+              uri: http://localhost:8080
+              predicates:
+                - Path=/qonaqzhai/admin/**
+              filters:
+                - RewritePath=/qonaqzhai/admin(?<segment>/?.*), ${segment}
+                - AuthenticationFilter
+
+            - id: event-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/qonaqzhai/events/**
+              filters:
+                - RewritePath=/qonaqzhai/events(?<segment>/?.*), /events${segment}
+                - AuthenticationFilter
           discovery:
             locator:
               enabled: false
@@ -24,5 +34,5 @@ spring:
       client:
         enabled: false
 
-    auth-service:
-      url: http://localhost:8081/auth
+auth-service:
+  url: http://localhost:8081

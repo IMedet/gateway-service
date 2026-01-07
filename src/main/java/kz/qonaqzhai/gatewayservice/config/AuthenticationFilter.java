@@ -1,5 +1,6 @@
 package kz.qonaqzhai.gatewayservice.config;
 
+import kz.qonaqzhai.gatewayservice.dto.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -7,9 +8,11 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
@@ -34,23 +37,42 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Object> {
             }
             String token = resolveToken(exchange);
 
+            if (!StringUtils.hasText(token)) {
+                throw new UnAuthorizeException("Invalid authorization header");
+            }
 
-            return webClient.get()
-                    .uri("/api/validate?token=" + token)
+
+            return webClient.post() // 1. POST қолдану
+                    .uri("/api/auth/validate") // 2. Дұрыс URI
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED) // 3. Форм деректерін жіберу үшін
+                    .body(BodyInserters.fromFormData("token", token)) // 4. Токенді форма параметрі ретінде жіберу
                     .retrieve()
-                    .bodyToMono(String.class)
-                    .flatMap(valid -> {
-                        if ("false".equals(valid)) {
-                            log.error("Token failed validation");
+                    .bodyToMono(MessageResponse.class) // 5. Жауапты MessageResponse ретінде қабылдау
+                    .flatMap(response -> {
+                        String message = response.getMessage(); // 6. Жауаптан сообщение алу
+                        if (message.contains("Invalid token")) { // 7. Жарамсыз токен шартын өзгерту
+                            log.error("Token failed validation: {}", message);
                             return Mono.error(new UnAuthorizeException("Invalid token"));
                         }
-                        exchange.getRequest().mutate().headers(httpHeaders ->
-                                httpHeaders.add("username", String.valueOf(valid))
-                        );
-                        return chain.filter(exchange);
+                        // Жауап форматы: "Token is valid for user: username"
+                        // Бұл жерде message-ден username алу керек
+                        String usernamePrefix = "Token is valid for user: ";
+                        if (message.startsWith(usernamePrefix)) {
+                            String username = message.substring(usernamePrefix.length());
+                            ServerHttpRequest mutatedRequest = exchange.getRequest()
+                                    .mutate()
+                                    .header("username", username)
+                                    .build();
+                            ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
+                            return chain.filter(mutatedExchange);
+                        } else {
+                            // Егер формат күтілгендей болмаса, қате лақтырамыз
+                            log.error("Unexpected validation response format: {}", message);
+                            return Mono.error(new UnAuthorizeException("Invalid validation response format"));
+                        }
                     })
                     .onErrorResume(error -> {
-                        log.error("Error during Request ");
+                        log.error("Error during Request ", error); // 9. Қате логын жақсарту
                         return Mono.error(error);
                     });
         };
