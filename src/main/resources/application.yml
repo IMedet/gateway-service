@@ -28,12 +28,21 @@ spring:
                   - Authorization
                 allowCredentials: false
           routes:
+            - id: auth-h2-console
+              uri: lb://auth-service
+              predicates:
+                - Path=/qonaqzhai/auth/h2-console/**
+              filters:
+                - RewritePath=/qonaqzhai/auth/h2-console(?<segment>/?.*), /h2-console${segment}
+                - InternalGatewaySignature
+
             - id: auth-service
               uri: lb://auth-service
               predicates:
                 - Path=/qonaqzhai/auth/**
               filters:
                 - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
+                - InternalGatewaySignature
 
             - id: administration
               uri: lb://administration
@@ -60,6 +69,11 @@ eureka:
 
 auth-service:
   url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
+security:
+  internal-gateway:
+    enabled: ${INTERNAL_GATEWAY_AUTH_ENABLED:true}
+    secret: ${INTERNAL_GATEWAY_SECRET:M9to4I7oX0IsoWvuY13dIxgW}
 
 logging:
   level:
