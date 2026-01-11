@@ -59,6 +59,7 @@ spring:
               filters:
                 - RewritePath=/qonaqzhai/events(?<segment>/?.*), /events${segment}
                 - AuthenticationFilter
+                - InternalGatewaySignature
 
 
 eureka:

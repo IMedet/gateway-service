@@ -61,7 +61,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Object> {
                             String username = message.substring(usernamePrefix.length());
                             ServerHttpRequest mutatedRequest = exchange.getRequest()
                                     .mutate()
-                                    .header("username", username)
+                                    .headers(headers -> {
+                                        headers.remove("username");
+                                        headers.add("username", username);
+                                    })
                                     .build();
                             ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
                             return chain.filter(mutatedExchange);
