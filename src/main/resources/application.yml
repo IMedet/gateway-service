@@ -61,6 +61,14 @@ spring:
                 - AuthenticationFilter
                 - InternalGatewaySignature
 
+            - id: event-service-h2-console
+              uri: lb://event-service
+              predicates:
+                - Path=/qonaqzhai/events/h2-console,/qonaqzhai/events/h2-console/**
+              filters:
+                - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
+                - InternalGatewaySignature
+
 
 eureka:
   client:

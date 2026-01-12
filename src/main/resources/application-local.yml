@@ -5,7 +5,7 @@ spring:
         webflux:
           routes:
             - id: auth-h2-console
-              uri: http://localhost:8081
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/qonaqzhai/auth/h2-console/**
               filters:
@@ -13,7 +13,7 @@ spring:
                 - InternalGatewaySignature
 
             - id: auth-service
-              uri: http://localhost:8081
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/qonaqzhai/auth/**
               filters:
@@ -21,15 +21,23 @@ spring:
                 - InternalGatewaySignature
 
             - id: administration
-              uri: http://localhost:8080
+              uri: ${ADMIN_SERVICE_URL:http://localhost:8080}
               predicates:
                 - Path=/qonaqzhai/admin/**
               filters:
                 - RewritePath=/qonaqzhai/admin(?<segment>/?.*), ${segment}
                 - AuthenticationFilter
 
+            - id: event-service-h2-console
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/qonaqzhai/events/h2-console/**
+              filters:
+                - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
+                - InternalGatewaySignature
+
             - id: event-service
-              uri: http://localhost:8082
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/qonaqzhai/events/**
               filters:
@@ -45,7 +53,7 @@ spring:
         enabled: false
 
 auth-service:
-  url: http://localhost:8081
+  url: ${AUTH_SERVICE_URL:http://localhost:8081}
 
 security:
   internal-gateway:

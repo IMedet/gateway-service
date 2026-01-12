@@ -1,4 +1,12 @@
 services:
+  shared-build:
+    image: maven:3.9.6-eclipse-temurin-17
+    working_dir: /workspace
+    volumes:
+      - ../shared:/workspace
+      - m2:/root/.m2
+    command: ["mvn", "-q", "-DskipTests", "install"]
+
   eureka:
     image: maven:3.9.6-eclipse-temurin-17
     working_dir: /workspace
@@ -10,6 +18,8 @@ services:
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8761:8761"
+    depends_on:
+      - shared-build
 
   auth-service:
     image: maven:3.9.6-eclipse-temurin-17
@@ -20,10 +30,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8081:8081"
     depends_on:
+      - shared-build
       - eureka
 
   event-service:
@@ -35,10 +48,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8082:8082"
     depends_on:
+      - shared-build
       - eureka
 
   administration:
@@ -55,6 +71,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      - shared-build
       - eureka
 
   gateway-service:
@@ -67,10 +84,15 @@ services:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       AUTH_SERVICE_URL: http://auth-service:8081
+      EVENT_SERVICE_URL: http://event-service:8082
+      ADMIN_SERVICE_URL: http://administration:8080
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8888:8888"
     depends_on:
+      - shared-build
       - eureka
       - auth-service
       - event-service
