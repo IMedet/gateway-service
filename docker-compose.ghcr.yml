@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  eureka:
+    image: ghcr.io/${GITHUB_OWNER}/eureka:latest
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+
+  auth-service:
+    image: ghcr.io/${GITHUB_OWNER}/auth-service:latest
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
+      - INTERNAL_GATEWAY_AUTH_ENABLED=true
+      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+    depends_on:
+      - eureka
+
+  event-service:
+    image: ghcr.io/${GITHUB_OWNER}/event-service:latest
+    container_name: event-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
+      - INTERNAL_GATEWAY_AUTH_ENABLED=true
+      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+    depends_on:
+      - eureka
+
+  administration:
+    image: ghcr.io/${GITHUB_OWNER}/administration:latest
+    container_name: administration
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
+      - INTERNAL_GATEWAY_AUTH_ENABLED=true
+      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+    depends_on:
+      - eureka
+
+  gateway-service:
+    image: ghcr.io/${GITHUB_OWNER}/gateway-service:latest
+    container_name: gateway-service
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
+      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - EVENT_SERVICE_URL=http://event-service:8082
+      - ADMIN_SERVICE_URL=http://administration:8080
+    depends_on:
+      - eureka
+      - auth-service
+      - event-service
+      - administration
