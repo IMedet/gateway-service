@@ -65,3 +65,31 @@ services:
       - auth-service
       - event-service
       - administration
+  
+  # Добавить в docker-compose.ghcr.yml
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+    depends_on:
+      - gateway-service
+      - auth-service
+      - event-service
+      - administration
+      - eureka
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data:
