@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   eureka:
-    image: ghcr.io/${GITHUB_OWNER}/eureka:latest
+    image: ghcr.io/imedet/eureka:latest
     container_name: eureka
     ports:
       - "8761:8761"
@@ -10,7 +10,7 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
 
   auth-service:
-    image: ghcr.io/${GITHUB_OWNER}/auth-service:latest
+    image: ghcr.io/imedet/auth-service:latest
     container_name: auth-service
     ports:
       - "8081:8081"
@@ -23,7 +23,7 @@ services:
       - eureka
 
   event-service:
-    image: ghcr.io/${GITHUB_OWNER}/event-service:latest
+    image: ghcr.io/imedet/event-service:latest
     container_name: event-service
     ports:
       - "8082:8082"
@@ -36,7 +36,7 @@ services:
       - eureka
 
   administration:
-    image: ghcr.io/${GITHUB_OWNER}/administration:latest
+    image: ghcr.io/imedet/administration:latest
     container_name: administration
     ports:
       - "8080:8080"
@@ -49,7 +49,7 @@ services:
       - eureka
 
   gateway-service:
-    image: ghcr.io/${GITHUB_OWNER}/gateway-service:latest
+    image: ghcr.io/imedet/gateway-service:latest
     container_name: gateway-service
     ports:
       - "8888:8888"
