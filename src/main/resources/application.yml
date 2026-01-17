@@ -69,6 +69,15 @@ spring:
                 - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
                 - InternalGatewaySignature
 
+            - id: event-service-items
+              uri: lb://event-service
+              predicates:
+                - Path=/qonaqzhai/items/**
+              filters:
+                - RewritePath=/qonaqzhai/items(?<segment>/?.*), /items${segment}
+                - AuthenticationFilter
+                - InternalGatewaySignature
+
 
 eureka:
   client:

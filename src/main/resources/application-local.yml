@@ -44,6 +44,15 @@ spring:
                 - RewritePath=/qonaqzhai/events(?<segment>/?.*), /events${segment}
                 - AuthenticationFilter
                 - InternalGatewaySignature
+
+            - id: event-service-items
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/qonaqzhai/items/**
+              filters:
+                - RewritePath=/qonaqzhai/items(?<segment>/?.*), /items${segment}
+                - AuthenticationFilter
+                - InternalGatewaySignature
           discovery:
             locator:
               enabled: false
