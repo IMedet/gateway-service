@@ -22,6 +22,19 @@ services:
     depends_on:
       - eureka
 
+  ai-service:
+    image: ghcr.io/imedet/ai-service:latest
+    container_name: ai-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
+      - INTERNAL_GATEWAY_AUTH_ENABLED=true
+      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+    depends_on:
+      - eureka
+
   event-service:
     image: ghcr.io/imedet/event-service:latest
     container_name: event-service
@@ -60,11 +73,13 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:8081
       - EVENT_SERVICE_URL=http://event-service:8082
       - ADMIN_SERVICE_URL=http://administration:8080
+      - AI_SERVICE_URL=http://ai-service:8084
     depends_on:
       - eureka
       - auth-service
       - event-service
       - administration
+      - ai-service
   
   # Добавить в docker-compose.ghcr.yml
   prometheus:
@@ -78,6 +93,7 @@ services:
       - auth-service
       - event-service
       - administration
+      - ai-service
       - eureka
 
   grafana:

@@ -57,6 +57,25 @@ services:
       - shared-build
       - eureka
 
+  ai-service:
+    image: maven:3.9.6-eclipse-temurin-17
+    working_dir: /workspace
+    volumes:
+      - ../ai-service:/workspace
+      - m2:/root/.m2
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
+      SERVER_PORT: "8084"
+    command: ["mvn", "-q", "spring-boot:run"]
+    ports:
+      - "8084:8084"
+    depends_on:
+      - shared-build
+      - eureka
+
   administration:
     image: maven:3.9.6-eclipse-temurin-17
     working_dir: /workspace
@@ -86,6 +105,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8081
       EVENT_SERVICE_URL: http://event-service:8082
       ADMIN_SERVICE_URL: http://administration:8080
+      AI_SERVICE_URL: http://ai-service:8084
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
       INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
     command: ["mvn", "-q", "spring-boot:run"]
@@ -97,6 +117,7 @@ services:
       - auth-service
       - event-service
       - administration
+      - ai-service
 
 volumes:
   m2:

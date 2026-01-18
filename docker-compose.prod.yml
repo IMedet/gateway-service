@@ -51,6 +51,17 @@ services:
       - shared-build
     command: ["bash", "-lc", "mvn -q -DskipTests package && cp -f target/*.jar /artifacts/administration.jar"]
 
+  ai-service-build:
+    image: maven:3.9.6-eclipse-temurin-17
+    working_dir: /workspace
+    volumes:
+      - ../ai-service:/workspace
+      - m2:/root/.m2
+      - artifacts:/artifacts
+    depends_on:
+      - shared-build
+    command: ["bash", "-lc", "mvn -q -DskipTests package && cp -f target/*.jar /artifacts/ai-service.jar"]
+
   gateway-service-build:
     image: maven:3.9.6-eclipse-temurin-17
     working_dir: /workspace
@@ -125,6 +136,24 @@ services:
     ports:
       - "8080:8080"
 
+  ai-service:
+    image: eclipse-temurin:17-jre
+    working_dir: /app
+    volumes:
+      - artifacts:/artifacts:ro
+    depends_on:
+      - ai-service-build
+      - eureka
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+      SERVER_PORT: "8084"
+    command: ["java", "-jar", "/artifacts/ai-service.jar"]
+    ports:
+      - "8084:8084"
+
   gateway-service:
     image: eclipse-temurin:17-jre
     working_dir: /app
@@ -136,12 +165,14 @@ services:
       - auth-service
       - event-service
       - administration
+      - ai-service
     environment:
       SPRING_PROFILES_ACTIVE: prod
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       AUTH_SERVICE_URL: http://auth-service:8081
       EVENT_SERVICE_URL: http://event-service:8082
       ADMIN_SERVICE_URL: http://administration:8080
+      AI_SERVICE_URL: http://ai-service:8084
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
       INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
     command: ["java", "-jar", "/artifacts/gateway-service.jar"]

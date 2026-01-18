@@ -10,6 +10,9 @@ spring:
                 - Path=/qonaqzhai/auth/h2-console/**
               filters:
                 - RewritePath=/qonaqzhai/auth/h2-console(?<segment>/?.*), /h2-console${segment}
+                - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/auth
+                - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/auth/h2-console${segment}
                 - InternalGatewaySignature
 
             - id: auth-service
@@ -20,12 +23,23 @@ spring:
                 - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
                 - InternalGatewaySignature
 
+            - id: administration-h2-console
+              uri: ${ADMIN_SERVICE_URL:http://localhost:8080}
+              predicates:
+                - Path=/qonaqzhai/admin/h2-console,/qonaqzhai/admin/h2-console/**
+              filters:
+                - RewritePath=/qonaqzhai/admin/h2-console(?<segment>/?.*), /h2-console${segment}
+                - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/admin
+                - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/admin/h2-console${segment}
+                - InternalGatewaySignature
+
             - id: administration
               uri: ${ADMIN_SERVICE_URL:http://localhost:8080}
               predicates:
                 - Path=/qonaqzhai/admin/**
               filters:
-                - RewritePath=/qonaqzhai/admin(?<segment>/?.*), ${segment}
+                - RewritePath=/qonaqzhai/admin/?(?<segment>.*), /${segment}
                 - AuthenticationFilter
 
             - id: event-service-h2-console
@@ -34,6 +48,9 @@ spring:
                 - Path=/qonaqzhai/events/h2-console/**
               filters:
                 - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
+                - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/events
+                - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/events/h2-console${segment}
                 - InternalGatewaySignature
 
             - id: event-service
@@ -51,6 +68,15 @@ spring:
                 - Path=/qonaqzhai/items/**
               filters:
                 - RewritePath=/qonaqzhai/items(?<segment>/?.*), /items${segment}
+                - AuthenticationFilter
+                - InternalGatewaySignature
+
+            - id: ai-service
+              uri: ${AI_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/qonaqzhai/ai/**
+              filters:
+                - RewritePath=/qonaqzhai/ai(?<segment>/?.*), /ai${segment}
                 - AuthenticationFilter
                 - InternalGatewaySignature
           discovery:
