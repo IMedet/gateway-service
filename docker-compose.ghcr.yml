@@ -32,6 +32,8 @@ services:
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
       - INTERNAL_GATEWAY_AUTH_ENABLED=true
       - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+      - GOOGLE_AI_STUDIO_API_KEY=${GOOGLE_AI_STUDIO_API_KEY}
+      - GOOGLE_GENAI_MODEL=${GOOGLE_GENAI_MODEL:-gemini-2.5-flash}
     depends_on:
       - eureka
 
@@ -81,7 +83,6 @@ services:
       - administration
       - ai-service
   
-  # Добавить в docker-compose.ghcr.yml
   prometheus:
     image: prom/prometheus
     ports:

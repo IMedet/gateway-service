@@ -149,6 +149,8 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
       INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+      GOOGLE_AI_STUDIO_API_KEY: ${GOOGLE_AI_STUDIO_API_KEY}
+      GOOGLE_GENAI_MODEL: ${GOOGLE_GENAI_MODEL:-gemini-2.5-flash}
       SERVER_PORT: "8084"
     command: ["java", "-jar", "/artifacts/ai-service.jar"]
     ports:

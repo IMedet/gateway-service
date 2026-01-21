@@ -31,7 +31,7 @@ services:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
-      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8081:8081"
@@ -49,7 +49,7 @@ services:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
-      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8082:8082"
@@ -67,7 +67,9 @@ services:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
-      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+      GOOGLE_AI_STUDIO_API_KEY: ${GOOGLE_AI_STUDIO_API_KEY}
+      GOOGLE_GENAI_MODEL: ${GOOGLE_GENAI_MODEL:-gemini-2.5-flash}
       SERVER_PORT: "8084"
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
@@ -107,7 +109,7 @@ services:
       ADMIN_SERVICE_URL: http://administration:8080
       AI_SERVICE_URL: http://ai-service:8084
       INTERNAL_GATEWAY_AUTH_ENABLED: "true"
-      INTERNAL_GATEWAY_SECRET: "766SBSZ9soKRmJISfScxyGLDzht"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
     command: ["mvn", "-q", "spring-boot:run"]
     ports:
       - "8888:8888"
