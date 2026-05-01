@@ -1,81 +1,60 @@
-server:
-  port: 8888
-  forward-headers-strategy: framework
 spring:
-  main:
-    web-application-type: reactive
-  application:
-    name: api-gateway
   cloud:
-    discovery:
-      enabled: true
     gateway:
       server:
         webflux:
-          globalcors:
-            corsConfigurations:
-              '[/**]':
-                allowedOrigins: "*"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - PATCH
-                  - DELETE
-                  - OPTIONS
-                allowedHeaders: "*"
-                exposedHeaders:
-                  - Authorization
-                allowCredentials: false
           routes:
             - id: auth-h2-console
-              uri: lb://auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/qonaqzhai/auth/h2-console/**
               filters:
                 - RewritePath=/qonaqzhai/auth/h2-console(?<segment>/?.*), /h2-console${segment}
                 - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/auth
                 - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/auth/h2-console${segment}
                 - InternalGatewaySignature
 
-            - id: auth-service-public
-              uri: lb://auth-service
-              predicates:
-                - Path=/qonaqzhai/auth/signin,/qonaqzhai/auth/signup,/qonaqzhai/auth/validate,/qonaqzhai/auth/test/**
-              filters:
-                - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
-                - InternalGatewaySignature
-
-            - id: auth-service-protected
-              uri: lb://auth-service
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/qonaqzhai/auth/**
               filters:
                 - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
-                - AuthenticationFilter
                 - InternalGatewaySignature
 
             - id: administration-h2-console
-              uri: lb://administration
+              uri: ${ADMIN_SERVICE_URL:http://localhost:8080}
               predicates:
                 - Path=/qonaqzhai/admin/h2-console,/qonaqzhai/admin/h2-console/**
               filters:
                 - RewritePath=/qonaqzhai/admin/h2-console(?<segment>/?.*), /h2-console${segment}
                 - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/admin
                 - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/admin/h2-console${segment}
                 - InternalGatewaySignature
 
             - id: administration
-              uri: lb://administration
+              uri: ${ADMIN_SERVICE_URL:http://localhost:8080}
               predicates:
                 - Path=/qonaqzhai/admin/**
               filters:
                 - RewritePath=/qonaqzhai/admin/?(?<segment>.*), /${segment}
                 - AuthenticationFilter
+
+            - id: event-service-h2-console
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/qonaqzhai/events/h2-console/**
+              filters:
+                - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
+                - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/events
+                - PreserveHostHeader
+                - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/events/h2-console${segment}
                 - InternalGatewaySignature
 
             - id: event-service
-              uri: lb://event-service
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/qonaqzhai/events/**
               filters:
@@ -83,18 +62,8 @@ spring:
                 - AuthenticationFilter
                 - InternalGatewaySignature
 
-            - id: event-service-h2-console
-              uri: lb://event-service
-              predicates:
-                - Path=/qonaqzhai/events/h2-console,/qonaqzhai/events/h2-console/**
-              filters:
-                - RewritePath=/qonaqzhai/events/h2-console(?<segment>/?.*), /h2-console${segment}
-                - AddRequestHeader=X-Forwarded-Prefix, /qonaqzhai/events
-                - PreserveHostHeader
-                - InternalGatewaySignature
-
             - id: event-service-items
-              uri: lb://event-service
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/qonaqzhai/items/**
               filters:
@@ -103,7 +72,7 @@ spring:
                 - InternalGatewaySignature
 
             - id: event-service-orders
-              uri: lb://event-service
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
               predicates:
                 - Path=/qonaqzhai/orders/**
               filters:
@@ -112,20 +81,20 @@ spring:
                 - InternalGatewaySignature
 
             - id: ai-service
-              uri: lb://ai-service
+              uri: ${AI_SERVICE_URL:http://localhost:8084}
               predicates:
                 - Path=/qonaqzhai/ai/**
               filters:
                 - RewritePath=/qonaqzhai/ai(?<segment>/?.*), /ai${segment}
                 - AuthenticationFilter
                 - InternalGatewaySignature
+          discovery:
+            locator:
+              enabled: false
 
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-    enabled: true
+    eureka:
+      client:
+        enabled: false
 
 auth-service:
   url: ${AUTH_SERVICE_URL:http://localhost:8081}
@@ -133,8 +102,4 @@ auth-service:
 security:
   internal-gateway:
     enabled: ${INTERNAL_GATEWAY_AUTH_ENABLED:true}
-    secret: ${INTERNAL_GATEWAY_SECRET:M9to4I7oX0IsoWvuY13dIxgW}
-
-logging:
-  level:
-    com.netflix.discovery.shared.resolver.aws.ConfigClusterResolver: WARN
+    secret: ${INTERNAL_GATEWAY_SECRET:766SBSZ9soKRmJISfScxyGLDzht}

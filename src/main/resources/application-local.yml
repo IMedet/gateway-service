@@ -15,12 +15,21 @@ spring:
                 - RewriteResponseHeader=Location, (?i)^https?://[^/]+/h2-console(?<segment>/?.*)$, http://localhost:8888/qonaqzhai/auth/h2-console${segment}
                 - InternalGatewaySignature
 
-            - id: auth-service
+            - id: auth-service-public
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/qonaqzhai/auth/signin,/qonaqzhai/auth/signup,/qonaqzhai/auth/validate,/qonaqzhai/auth/test/**
+              filters:
+                - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
+                - InternalGatewaySignature
+
+            - id: auth-service-protected
               uri: ${AUTH_SERVICE_URL:http://localhost:8081}
               predicates:
                 - Path=/qonaqzhai/auth/**
               filters:
                 - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
+                - AuthenticationFilter
                 - InternalGatewaySignature
 
             - id: administration-h2-console
@@ -41,6 +50,7 @@ spring:
               filters:
                 - RewritePath=/qonaqzhai/admin/?(?<segment>.*), /${segment}
                 - AuthenticationFilter
+                - InternalGatewaySignature
 
             - id: event-service-h2-console
               uri: ${EVENT_SERVICE_URL:http://localhost:8082}
@@ -68,6 +78,15 @@ spring:
                 - Path=/qonaqzhai/items/**
               filters:
                 - RewritePath=/qonaqzhai/items(?<segment>/?.*), /items${segment}
+                - AuthenticationFilter
+                - InternalGatewaySignature
+
+            - id: event-service-orders
+              uri: ${EVENT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/qonaqzhai/orders/**
+              filters:
+                - RewritePath=/qonaqzhai/orders(?<segment>/?.*), /orders${segment}
                 - AuthenticationFilter
                 - InternalGatewaySignature
 

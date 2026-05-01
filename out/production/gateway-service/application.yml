@@ -38,21 +38,12 @@ spring:
                 - PreserveHostHeader
                 - InternalGatewaySignature
 
-            - id: auth-service-public
-              uri: lb://auth-service
-              predicates:
-                - Path=/qonaqzhai/auth/signin,/qonaqzhai/auth/signup,/qonaqzhai/auth/validate,/qonaqzhai/auth/test/**
-              filters:
-                - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
-                - InternalGatewaySignature
-
-            - id: auth-service-protected
+            - id: auth-service
               uri: lb://auth-service
               predicates:
                 - Path=/qonaqzhai/auth/**
               filters:
                 - RewritePath=/qonaqzhai/auth(?<segment>/?.*), /api/auth${segment}
-                - AuthenticationFilter
                 - InternalGatewaySignature
 
             - id: administration-h2-console
@@ -72,7 +63,6 @@ spring:
               filters:
                 - RewritePath=/qonaqzhai/admin/?(?<segment>.*), /${segment}
                 - AuthenticationFilter
-                - InternalGatewaySignature
 
             - id: event-service
               uri: lb://event-service
