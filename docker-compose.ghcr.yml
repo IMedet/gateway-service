@@ -1,94 +1,96 @@
-version: '3.8'
-
 services:
   eureka:
     image: ghcr.io/imedet/eureka:latest
-    container_name: eureka
     ports:
       - "8761:8761"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      SPRING_PROFILES_ACTIVE: prod
+    restart: unless-stopped
 
   auth-service:
     image: ghcr.io/imedet/auth-service:latest
-    container_name: auth-service
     ports:
       - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
-      - INTERNAL_GATEWAY_AUTH_ENABLED=true
-      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+    restart: unless-stopped
     depends_on:
       - eureka
 
   ai-service:
     image: ghcr.io/imedet/ai-service:latest
-    container_name: ai-service
     ports:
       - "8084:8084"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
-      - INTERNAL_GATEWAY_AUTH_ENABLED=true
-      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
-      - GOOGLE_AI_STUDIO_API_KEY=${GOOGLE_AI_STUDIO_API_KEY}
-      - GOOGLE_GENAI_MODEL=${GOOGLE_GENAI_MODEL:-gemini-2.5-flash}
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+      GOOGLE_AI_STUDIO_API_KEY: ${GOOGLE_AI_STUDIO_API_KEY}
+      GOOGLE_GENAI_MODEL: ${GOOGLE_GENAI_MODEL:-gemini-2.5-flash}
+      SERVER_PORT: "8084"
+    restart: unless-stopped
     depends_on:
       - eureka
 
   event-service:
     image: ghcr.io/imedet/event-service:latest
-    container_name: event-service
     ports:
       - "8082:8082"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
-      - INTERNAL_GATEWAY_AUTH_ENABLED=true
-      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+    restart: unless-stopped
     depends_on:
       - eureka
 
   administration:
     image: ghcr.io/imedet/administration:latest
-    container_name: administration
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
-      - INTERNAL_GATEWAY_AUTH_ENABLED=true
-      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      SERVER_PORT: "8080"
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+    restart: unless-stopped
     depends_on:
       - eureka
 
   gateway-service:
     image: ghcr.io/imedet/gateway-service:latest
-    container_name: gateway-service
     ports:
       - "8888:8888"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka:8761/eureka
-      - INTERNAL_GATEWAY_SECRET=${INTERNAL_GATEWAY_SECRET}
-      - AUTH_SERVICE_URL=http://auth-service:8081
-      - EVENT_SERVICE_URL=http://event-service:8082
-      - ADMIN_SERVICE_URL=http://administration:8080
-      - AI_SERVICE_URL=http://ai-service:8084
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      AUTH_SERVICE_URL: http://auth-service:8081
+      EVENT_SERVICE_URL: http://event-service:8082
+      ADMIN_SERVICE_URL: http://administration:8080
+      AI_SERVICE_URL: http://ai-service:8084
+      INTERNAL_GATEWAY_AUTH_ENABLED: "true"
+      INTERNAL_GATEWAY_SECRET: ${INTERNAL_GATEWAY_SECRET:-766SBSZ9soKRmJISfScxyGLDzht}
+    restart: unless-stopped
     depends_on:
       - eureka
       - auth-service
       - event-service
       - administration
       - ai-service
-  
+
   prometheus:
     image: prom/prometheus
     ports:
       - "9090:9090"
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+    restart: unless-stopped
     depends_on:
       - gateway-service
       - auth-service
@@ -102,11 +104,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
     volumes:
       - grafana_data:/var/lib/grafana
+    restart: unless-stopped
     depends_on:
       - prometheus
 
 volumes:
   grafana_data:
+
